@@ -1,15 +1,24 @@
 import React from 'react';
 
-
 class App extends React.Component {
 
   constructor(props){
-    super(props)
+    super(props);
+    this.state = {
+      todos: [
+        {'id': 1, title: 'first todo', completed: false},
+        {'id': 2, title: 'second todo', completed: true},
+        {'id': 3, title: 'third todo', completed: false},
+      ],
+      newTodoText: '',
+      completed: false
+    };
   }
 
   componentDidMount(){
 
   }
+
 
   render() {
     return (
@@ -30,6 +39,24 @@ class App extends React.Component {
                   />
                   <button className={"btn btn-primary"}>Create
                   </button>
+                </div>
+                <div>
+                  {this.state.todos.map(todo => {
+                     return (
+                        <div className={"alert alert-primary alert-dismissible text-center"}>
+                          <button className={"close"} type={"button"}>
+                            <span id={todo.id} aria-hidden="true">×</span>
+                          </button>
+                          <p id={`text_${todo.id}`}
+                             className={'text-center h4'}
+                             style = {todo.completed
+                               ? {textDecoration: 'line-through', cursor: 'pointer', display: 'block'}
+                               : {cursor: 'pointer', display: 'block'}}>{todo.title}
+                          </p>
+                        </div>
+                      )
+                    })
+                  }
                 </div>
               </div>
             </div>

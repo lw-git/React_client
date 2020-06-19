@@ -1,4 +1,5 @@
 import React from 'react';
+import TodoList from "./components/Todolist";
 
 class App extends React.Component {
 
@@ -41,22 +42,9 @@ class App extends React.Component {
                   </button>
                 </div>
                 <div>
-                  {this.state.todos.map(todo => {
-                     return (
-                        <div className={"alert alert-primary alert-dismissible text-center"}>
-                          <button className={"close"} type={"button"}>
-                            <span id={todo.id} aria-hidden="true">×</span>
-                          </button>
-                          <p id={`text_${todo.id}`}
-                             className={'text-center h4'}
-                             style = {todo.completed
-                               ? {textDecoration: 'line-through', cursor: 'pointer', display: 'block'}
-                               : {cursor: 'pointer', display: 'block'}}>{todo.title}
-                          </p>
-                        </div>
-                      )
-                    })
-                  }
+                  <div>
+                    <TodoList todos={this.state.todos} />
+                  </div>
                 </div>
               </div>
             </div>

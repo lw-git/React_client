@@ -1,25 +1,35 @@
 import React from 'react';
 import TodoList from "./components/Todolist";
+import axios from 'axios';
 
 class App extends React.Component {
 
   constructor(props){
     super(props);
     this.state = {
-      todos: [
-        {'id': 1, title: 'first todo', completed: false},
-        {'id': 2, title: 'second todo', completed: true},
-        {'id': 3, title: 'third todo', completed: false},
-      ],
+      todos: [],
       newTodoText: '',
       completed: false
     };
+    this.instance = axios.create({
+      baseURL: 'http://127.0.0.1:8000/api/'
+    });
   }
 
   componentDidMount(){
-
+    this.getTodos();
   }
 
+  getTodos = () => {
+    this.instance.get()
+      .then(res  => {
+        this.setState({todos: res.data});
+      })
+      .catch(err => {
+        console.log(err);
+      });
+
+  }
 
   render() {
     return (

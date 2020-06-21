@@ -31,6 +31,25 @@ class App extends React.Component {
 
   }
 
+  addTodo = () => {
+    this.instance.post('create/', {
+      title: this.state.newTodoText,
+      completed: this.state.completed
+    })
+      .then(()  => this.getTodos())
+      .catch(err => {
+        console.log(err);
+      });
+  }
+
+  onTextChange = (e) => {
+    this.setState({...this.state, newTodoText: e.currentTarget.value});
+  }
+
+  onCompletedChange = (e) => {
+    this.setState({...this.state, completed: e.currentTarget.checked});
+  }
+
   render() {
     return (
       <div className={'container'}>
@@ -42,14 +61,16 @@ class App extends React.Component {
               </div>
               <div className={'card-body'}>
                 Completed:&nbsp;
-                <input type={"checkbox"}
+                <input onChange={this.onCompletedChange}
+                       type={"checkbox"}
+                       checked={this.state.completed}
                 />
                 <div className={"add-items d-flex mb-4"}>
-                  <input className={"form-control"}
+                  <input onChange={this.onTextChange} className={"form-control"}
                          type={"text"}
+                         value={this.state.newTodoText}
                   />
-                  <button className={"btn btn-primary"}>Create
-                  </button>
+                  <button onClick={this.addTodo} className={"btn btn-primary"}>Create</button>
                 </div>
                 <div>
                   <div>

@@ -9,7 +9,9 @@ class App extends React.Component {
     this.state = {
       todos: [],
       newTodoText: '',
-      completed: false
+      completed: false,
+      todoId: null,
+      updateFlag: false
     };
     this.instance = axios.create({
       baseURL: 'http://127.0.0.1:8000/api/'
@@ -18,6 +20,14 @@ class App extends React.Component {
 
   componentDidMount(){
     this.getTodos();
+  }
+
+  setStateToNull = () => {
+    this.setState({...this.state,
+      newTodoText: '',
+      completed: false,
+      todoId: null,
+      updateFlag: false})
   }
 
   getTodos = () => {
@@ -40,6 +50,29 @@ class App extends React.Component {
       .catch(err => {
         console.log(err);
       });
+    this.setStateToNull()
+  }
+
+  updateTodo = () => {
+    this.instance.patch(`${this.state.todoId}/update/`, {
+      title: this.state.newTodoText,
+      completed: this.state.completed
+    })
+      .then(()  => this.getTodos())
+      .catch(err => {
+        console.log(err);
+      });
+    this.setStateToNull()
+  }
+
+  prepareUpdate = (e) => {
+    let completed = e.currentTarget.className.includes('strike');
+    this.setState({...this.state,
+      newTodoText: e.currentTarget.innerHTML,
+      completed: completed,
+      todoId: e.currentTarget.id.slice(5),
+      updateFlag: true
+    })    
   }
 
   onTextChange = (e) => {
@@ -70,13 +103,14 @@ class App extends React.Component {
                          type={"text"}
                          value={this.state.newTodoText}
                   />
-                  <button onClick={this.addTodo} className={"btn btn-primary"}>Create</button>
+                  <button onClick={this.state.updateFlag ? this.updateTodo : this.addTodo}
+                          className={"btn btn-primary"}>
+                    {this.state.updateFlag
+                      ? 'Update'
+                      : 'Create'}</button>
                 </div>
-                <div>
-                  <div>
-                    <TodoList todos={this.state.todos} />
-                  </div>
-                </div>
+                <TodoList todos={this.state.todos}
+                          prepareUpdate={this.prepareUpdate} />
               </div>
             </div>
           </div>

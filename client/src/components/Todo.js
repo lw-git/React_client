@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './Todo.module.css';
 
-const Todo = ({task}) => {
+const Todo = ({task, prepareUpdate}) => {
   return (
     <div className={"alert alert-primary alert-dismissible text-center"}>
       <button className={"close"} type={"button"}>
@@ -10,8 +10,8 @@ const Todo = ({task}) => {
       <p id={`text_${task.id}`}
          className={`text-center h4 ${task.completed ? styles.strike : undefined}`}
          style={{cursor:'pointer', display: 'block'}}
-         >{task.title}</p>
-    </div>
+         onClick={prepareUpdate}>{task.title}</p>
+      </div>
   )
 }
 

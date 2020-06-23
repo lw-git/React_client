@@ -82,6 +82,11 @@ class App extends React.Component {
   onCompletedChange = (e) => {
     this.setState({...this.state, completed: e.currentTarget.checked});
   }
+  removeTodo = (e) => {
+    this.instance.delete(`${e.currentTarget.id}/delete/`)
+      .then(() => this.getTodos())
+      .catch(err => console.error(err));
+  }
 
   render() {
     return (
@@ -110,7 +115,8 @@ class App extends React.Component {
                       : 'Create'}</button>
                 </div>
                 <TodoList todos={this.state.todos}
-                          prepareUpdate={this.prepareUpdate} />
+                          prepareUpdate={this.prepareUpdate}
+                          removeTodo={this.removeTodo} />
               </div>
             </div>
           </div>

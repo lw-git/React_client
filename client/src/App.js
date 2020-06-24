@@ -1,129 +1,109 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import TodoList from "./components/Todolist";
 import axios from 'axios';
 
-class App extends React.Component {
+const App = () => {
+  const [todoText, setTodoText] = useState("");
+  const [completed, setCompleted] = useState(false);
+  const [todoId, setTodoId] = useState(null);
+  const [updateFlag, setUpdateFlag] = useState(false);
+  const [todos, setTodos] = useState([]);
 
-  constructor(props){
-    super(props);
-    this.state = {
-      todos: [],
-      newTodoText: '',
-      completed: false,
-      todoId: null,
-      updateFlag: false
-    };
-    this.instance = axios.create({
-      baseURL: 'http://127.0.0.1:8000/api/'
-    });
+  const instance = axios.create({
+    baseURL: 'http://127.0.0.1:8000/api/'
+  });
+
+  // eslint-disable-next-line
+  useEffect(() => { getTodos() }, []);
+
+
+  const setStateToNull = () => {
+    setTodoText('');
+    setCompleted(false);
+    setTodoId(null);
+    setUpdateFlag(false);
   }
 
-  componentDidMount(){
-    this.getTodos();
+  const prepareUpdate = (e) => {
+    setTodoText(e.currentTarget.innerHTML);
+    setCompleted(e.currentTarget.className.includes('strike'));
+    setTodoId(e.currentTarget.id.slice(5));
+    setUpdateFlag(true);
   }
 
-  setStateToNull = () => {
-    this.setState({...this.state,
-      newTodoText: '',
-      completed: false,
-      todoId: null,
-      updateFlag: false})
+  const getTodos = () => {
+    instance.get()
+      .then(res  => setTodos(res.data))
+      .catch(err => console.log(err));
   }
 
-  getTodos = () => {
-    this.instance.get()
-      .then(res  => {
-        this.setState({todos: res.data});
-      })
-      .catch(err => {
-        console.log(err);
-      });
-
-  }
-
-  addTodo = () => {
-    this.instance.post('create/', {
-      title: this.state.newTodoText,
-      completed: this.state.completed
+  const addTodo = () => {
+    instance.post('create/', {
+      title: todoText,
+      completed: completed
     })
-      .then(()  => this.getTodos())
-      .catch(err => {
-        console.log(err);
-      });
-    this.setStateToNull()
+      .then(()  => getTodos())
+      .catch(err => console.log(err));
+    setStateToNull()
   }
 
-  updateTodo = () => {
-    this.instance.patch(`${this.state.todoId}/update/`, {
-      title: this.state.newTodoText,
-      completed: this.state.completed
+  const updateTodo = () => {
+    instance.patch(`${todoId}/update/`, {
+      title: todoText,
+      completed: completed
     })
-      .then(()  => this.getTodos())
-      .catch(err => {
-        console.log(err);
-      });
-    this.setStateToNull()
+      .then(()  => getTodos())
+      .catch(err => console.log(err));
+    setStateToNull()
   }
 
-  prepareUpdate = (e) => {
-    let completed = e.currentTarget.className.includes('strike');
-    this.setState({...this.state,
-      newTodoText: e.currentTarget.innerHTML,
-      completed: completed,
-      todoId: e.currentTarget.id.slice(5),
-      updateFlag: true
-    })    
+  const removeTodo = (e) => {
+    instance.delete(`${e.currentTarget.id}/delete/`)
+      .then(() => getTodos())
+      .catch(err => console.log(err));
   }
 
-  onTextChange = (e) => {
-    this.setState({...this.state, newTodoText: e.currentTarget.value});
+  const onTextChange = (e) => {
+    setTodoText(e.currentTarget.value);
+  }
+  const onCompletedChange = (e) => {
+    setCompleted(e.currentTarget.checked);
   }
 
-  onCompletedChange = (e) => {
-    this.setState({...this.state, completed: e.currentTarget.checked});
-  }
-  removeTodo = (e) => {
-    this.instance.delete(`${e.currentTarget.id}/delete/`)
-      .then(() => this.getTodos())
-      .catch(err => console.error(err));
-  }
-
-  render() {
-    return (
-      <div className={'container'}>
-        <div className={'row'}>
-          <div className={'col-lg-8 mx-auto'}>
-            <div className={'card'}>
-              <div className={'card-header bg-primary text-white'}>
-                <h1>Todo:</h1>
-              </div>
-              <div className={'card-body'}>
-                Completed:&nbsp;
-                <input onChange={this.onCompletedChange}
-                       type={"checkbox"}
-                       checked={this.state.completed}
+  return (
+    <div className={'container'}>
+      <div className={'row'}>
+        <div className={'col-lg-8 mx-auto'}>
+          <div className={'card'}>
+            <div className={'card-header bg-primary text-white'}>
+              <h1>Todo:</h1>
+            </div>
+            <div className={'card-body'}>
+              Completed:&nbsp;
+              <input onChange={onCompletedChange}
+                     type={"checkbox"}
+                     checked={completed}
+              />
+              <div className={"add-items d-flex mb-4"}>
+                <input onChange={onTextChange} className={"form-control"}
+                       type={"text"}
+                       value={todoText}
                 />
-                <div className={"add-items d-flex mb-4"}>
-                  <input onChange={this.onTextChange} className={"form-control"}
-                         type={"text"}
-                         value={this.state.newTodoText}
-                  />
-                  <button onClick={this.state.updateFlag ? this.updateTodo : this.addTodo}
-                          className={"btn btn-primary"}>
-                    {this.state.updateFlag
-                      ? 'Update'
-                      : 'Create'}</button>
-                </div>
-                <TodoList todos={this.state.todos}
-                          prepareUpdate={this.prepareUpdate}
-                          removeTodo={this.removeTodo} />
+                <button onClick={updateFlag ? updateTodo : addTodo}
+                        className={"btn btn-primary"}>
+                  {updateFlag
+                    ? 'Update'
+                    : 'Create'}</button>
               </div>
+              <TodoList todos={todos}
+                        prepareUpdate={prepareUpdate}
+                        removeTodo={removeTodo} />
             </div>
           </div>
         </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 export default App;

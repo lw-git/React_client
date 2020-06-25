@@ -1,6 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import TodoList from "./components/Todolist";
+import Preloader from "./components/Preloader";
 import axios from 'axios';
+
 
 const App = () => {
   const [todoText, setTodoText] = useState("");
@@ -8,6 +10,7 @@ const App = () => {
   const [todoId, setTodoId] = useState(null);
   const [updateFlag, setUpdateFlag] = useState(false);
   const [todos, setTodos] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const instance = axios.create({
     baseURL: 'http://127.0.0.1:8000/api/'
@@ -15,7 +18,6 @@ const App = () => {
 
   // eslint-disable-next-line
   useEffect(() => { getTodos() }, []);
-
 
   const setStateToNull = () => {
     setTodoText('');
@@ -35,40 +37,49 @@ const App = () => {
     instance.get()
       .then(res  => setTodos(res.data))
       .catch(err => console.log(err));
+    setLoading(false);
   }
 
   const addTodo = () => {
+    setLoading(true);
     instance.post('create/', {
       title: todoText,
       completed: completed
     })
       .then(()  => getTodos())
-      .catch(err => console.log(err));
+      .catch(err => {
+        setLoading(false);
+        console.log(err);
+      });
     setStateToNull()
   }
 
   const updateTodo = () => {
+    setLoading(true);
     instance.patch(`${todoId}/update/`, {
       title: todoText,
       completed: completed
     })
       .then(()  => getTodos())
-      .catch(err => console.log(err));
+      .catch(err => {
+        setLoading(false);
+        console.log(err);
+      });
     setStateToNull()
   }
 
   const removeTodo = (e) => {
+    setLoading(true);
     instance.delete(`${e.currentTarget.id}/delete/`)
       .then(() => getTodos())
-      .catch(err => console.log(err));
+      .catch(err => {
+        setLoading(false);
+        console.log(err);
+      });
   }
 
-  const onTextChange = (e) => {
-    setTodoText(e.currentTarget.value);
-  }
-  const onCompletedChange = (e) => {
-    setCompleted(e.currentTarget.checked);
-  }
+  const onTextChange = (e) => {setTodoText(e.currentTarget.value)};
+  const onCompletedChange = (e) => {setCompleted(e.currentTarget.checked)};
 
   return (
     <div className={'container'}>
@@ -95,9 +106,11 @@ const App = () => {
                     ? 'Update'
                     : 'Create'}</button>
               </div>
-              <TodoList todos={todos}
-                        prepareUpdate={prepareUpdate}
-                        removeTodo={removeTodo} />
+              {loading ? <Preloader/> :
+                <TodoList todos={todos}
+                          prepareUpdate={prepareUpdate}
+                          removeTodo={removeTodo} />
+              }
             </div>
           </div>
         </div>

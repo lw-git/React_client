@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import TodoList from "./components/Todolist";
 import Preloader from "./components/Preloader";
+import Error from "./components/Error";
 import axios from 'axios';
 
 
@@ -11,6 +12,8 @@ const App = () => {
   const [updateFlag, setUpdateFlag] = useState(false);
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showError, setShowError] = useState(false);
+  const [errorText, setErrorText] = useState('')
 
   const instance = axios.create({
     baseURL: 'http://127.0.0.1:8000/api/'
@@ -26,6 +29,15 @@ const App = () => {
     setUpdateFlag(false);
   }
 
+  const handleError = (err) => {
+    setLoading(false);
+    setShowError(true);
+    setErrorText(err.toString());
+  }
+  const hideError = () => {
+    setShowError(false);
+  }
+
   const prepareUpdate = (e) => {
     setTodoText(e.currentTarget.innerHTML);
     setCompleted(e.currentTarget.className.includes('strike'));
@@ -36,7 +48,7 @@ const App = () => {
   const getTodos = () => {
     instance.get()
       .then(res  => setTodos(res.data))
-      .catch(err => console.log(err));
+      .catch(err => handleError(err));
     setLoading(false);
   }
 
@@ -47,10 +59,7 @@ const App = () => {
       completed: completed
     })
       .then(()  => getTodos())
-      .catch(err => {
-        setLoading(false);
-        console.log(err);
-      });
+      .catch(err => handleError(err));
     setStateToNull()
   }
 
@@ -61,10 +70,7 @@ const App = () => {
       completed: completed
     })
       .then(()  => getTodos())
-      .catch(err => {
-        setLoading(false);
-        console.log(err);
-      });
+      .catch(err => handleError(err));
     setStateToNull()
   }
 
@@ -72,10 +78,7 @@ const App = () => {
     setLoading(true);
     instance.delete(`${e.currentTarget.id}/delete/`)
       .then(() => getTodos())
-      .catch(err => {
-        setLoading(false);
-        console.log(err);
-      });
+      .catch(err => handleError(err));
   }
 
   const onTextChange = (e) => {setTodoText(e.currentTarget.value)};
@@ -106,6 +109,8 @@ const App = () => {
                     ? 'Update'
                     : 'Create'}</button>
               </div>
+              {showError ?
+                <Error text={errorText} hideError={hideError} timeout={3000} />: null}
               {loading ? <Preloader/> :
                 <TodoList todos={todos}
                           prepareUpdate={prepareUpdate}

@@ -114,7 +114,8 @@ const App = () => {
               {loading ? <Preloader/> :
                 <TodoList todos={todos}
                           prepareUpdate={prepareUpdate}
-                          removeTodo={removeTodo} />
+                          removeTodo={removeTodo}
+                          flag={updateFlag} />
               }
             </div>
           </div>

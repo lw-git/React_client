@@ -45,40 +45,39 @@ const App = () => {
     setUpdateFlag(true);
   }
 
-  const getTodos = () => {
-    instance.get()
-      .then(res  => setTodos(res.data))
-      .catch(err => handleError(err));
-    setLoading(false);
+  const getTodos = async() => {
+    try{
+      let response =  await instance.get('');
+      setTodos(response.data);
+      setLoading(false);
+    } catch(err) {handleError(err)}
   }
 
-  const addTodo = () => {
+  const addTodo = async() => {
     setLoading(true);
-    instance.post('create/', {
-      title: todoText,
-      completed: completed
-    })
-      .then(()  => getTodos())
-      .catch(err => handleError(err));
-    setStateToNull()
+    try {
+      await instance.post('create/', {title: todoText, completed: completed});
+      await getTodos();
+    } catch(err) {handleError(err)}
+    finally {setStateToNull()}
   }
 
-  const updateTodo = () => {
+  const updateTodo = async() => {
     setLoading(true);
-    instance.patch(`${todoId}/update/`, {
-      title: todoText,
-      completed: completed
-    })
-      .then(()  => getTodos())
-      .catch(err => handleError(err));
-    setStateToNull()
+    try {
+      await instance.patch(`${todoId}/update/`, {title: todoText, completed: completed});
+      await getTodos();
+    } catch(err) {handleError(err)}
+    finally {setStateToNull()}
   }
 
-  const removeTodo = (e) => {
+  const removeTodo = async(e) => {
     setLoading(true);
-    instance.delete(`${e.currentTarget.id}/delete/`)
-      .then(() => getTodos())
-      .catch(err => handleError(err));
+    try {
+      await instance.delete(`${e.currentTarget.id}/delete/`);
+      await getTodos();
+    } catch(err) {handleError(err)}
+    finally {setStateToNull()}
   }
 
   const onTextChange = (e) => {setTodoText(e.currentTarget.value)};
